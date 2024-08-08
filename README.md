@@ -5,14 +5,18 @@ Push-Swap is a project written in Go that involves sorting a list of integers us
 ## Project Structure
 ```
 .
-|-- Checker
-|   `-- main.go
-|-- PKG
-|   `-- PS_oprations.go
-|-- go.mod
-|-- main.go
-`-- swap
-    `-- main.go
+│   go.mod
+│   README.md
+│   testaudit.sh
+│   
+├───CheckerProg
+│       main.go
+│       
+├───SwapProg
+│       main.go
+│       
+└───test
+        main.go
 ```
 
 ## Instructions
