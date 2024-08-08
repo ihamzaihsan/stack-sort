@@ -230,7 +230,6 @@ func main() {
 		return
 
 	} else if isSorted(stackA) {
-		fmt.Println(red, "Error", reset)
 		return
 
 	}
