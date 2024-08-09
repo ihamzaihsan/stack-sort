@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -62,12 +63,16 @@ func (s *Stack) IsSorted() bool {
 
 func parseArguments(args []string) (*Stack, error) {
 	a := &Stack{}
+	seen := make(map[int]bool)
 	for _, arg := range args {
 		value, err := strconv.Atoi(arg)
 		if err != nil {
 			return nil, fmt.Errorf("error: %v", err)
 		}
-		//FIXME
+		if seen[value] {
+			return nil, fmt.Errorf("error: duplicate integer %d", value)
+		}
+		seen[value] = true
 		a.PUSH(value)
 	}
 	return a, nil
@@ -76,33 +81,14 @@ func parseArguments(args []string) (*Stack, error) {
 func executeInstruction(instruction string, a, b *Stack) error {
 	switch instruction {
 	case "sa":
-		//FIXME 
 		a.Swap()
-
-		// fmt.Println("sa")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 
 	case "sb":
 		b.Swap()
 
-		// fmt.Println("sb")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
-
 	case "ss":
 		a.Swap()
 		b.Swap()
-
-		// fmt.Println("ss")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 
 	case "pa":
 		if len(b.elements) == 0 {
@@ -110,78 +96,31 @@ func executeInstruction(instruction string, a, b *Stack) error {
 		}
 		a.Push(b.Pop())
 
-		// fmt.Println("pa")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
-
 	case "pb":
 		if len(a.elements) == 0 {
 			return fmt.Errorf("error: cannot pop from empty stack a")
 		}
 		b.Push(a.Pop())
 
-		// fmt.Println("pb")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
-
 	case "ra":
-		// sheft up
 		a.Rotate()
-
-		// fmt.Println("ra")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 
 	case "rb":
 		b.Rotate()
-
-		// fmt.Println("rb")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 
 	case "rr":
 		a.Rotate()
 		b.Rotate()
 
-		// fmt.Println("rr")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
-
 	case "rra":
 		a.ReverseRotate()
-
-		// fmt.Println("rra")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 
 	case "rrb":
 		b.ReverseRotate()
 
-		// fmt.Println("rrb")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
-
 	case "rrr":
 		a.ReverseRotate()
 		b.ReverseRotate()
-
-		// fmt.Println("rrr")
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
-		// fmt.Println()
 
 	default:
 		return fmt.Errorf("error: invalid instruction %s", instruction)
@@ -193,46 +132,44 @@ func main() {
 	if len(os.Args) < 2 {
 		return
 	}
+	if len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "Error")
+		os.Exit(1)
+	}
 
-	a, err := parseArguments(strings.Split(os.Args[1], " "))
+	args := strings.Fields(os.Args[1])
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "Error")
+		os.Exit(1)
+	}
+	a, err := parseArguments(args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error")
-		return
+		os.Exit(1)
 	}
 	b := &Stack{}
 
 	var instructions []string
-	for {
-		var instruction string
-		if _, err := fmt.Scanln(&instruction); err != nil {
-			break
-		}
-		instructions = append(instructions, instruction)
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		// Keep the entire line so malformed instructions are rejected below.
+		instructions = append(instructions, scanner.Text())
 	}
-	
-	// fmt.Println("---------------------------")
-	// fmt.Println("Stake A: ", a.elements)
-	// fmt.Println("Stake B: ", b.elements)
-	// fmt.Println("---------------------------")
+	if scanner.Err() != nil {
+		fmt.Fprintln(os.Stderr, "Error")
+		os.Exit(1)
+	}
 
 	for _, instruction := range instructions {
 		if err := executeInstruction(instruction, a, b); err != nil {
 			fmt.Fprintln(os.Stderr, "Error")
-			return
+			os.Exit(1)
 		}
 	}
 
 	if a.IsSorted() && len(b.elements) == 0 {
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
 		fmt.Println("OK")
 	} else {
-		// fmt.Println("Stake A: ", a.elements)
-		// fmt.Println("Stake B: ", b.elements)
 		fmt.Println("KO")
 	}
 }
-
-
-
-
